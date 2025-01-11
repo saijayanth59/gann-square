@@ -1,9 +1,11 @@
 import yfinance as yf
-import calculate_gann_values from utils
+import pandas as pd
+from utils import calculate_gann_values
 from bisect import bisect_left
 
+
 def day_test(date, data):
-    first_close = data.iloc[0]['Close'].iloc[0]
+    first_close = data.iloc[0]['Close']
     gann_values = calculate_gann_values(first_close)
 
     trade_details = {
@@ -15,22 +17,25 @@ def day_test(date, data):
         "exitTime": None,
         "target": None,
         "stopLoss": None,
+        "stopLossTime": None,
         "level": -1,
-        "isHit": False,
-        "isLoss": False
     }
 
     for _, row in data.iterrows():
-        high = row.iloc["High"]
-        low = row.iloc["Low"]
-        close = row.iloc["Close"]
-        open_price = row.iloc["Open"]
+        
+        if trade_details["stopLossTime"] is not None:
+            break
+        # print(row["Close"])
+        high = row["High"]
+        low = row["Low"]
+        close = row["Close"]
+        open_price = row["Open"]
 
         #entry
         if trade_details["tradeType"] is not None and trade_details["entry"] is None:
             trade_details.update({
                     "entry": open_price,
-                    "entryTime": data.index,
+                    "entryTime": row["time"],
             })
             if trade_details["tradeType"] == "buy":
                 trade_details.update({
@@ -55,21 +60,54 @@ def day_test(date, data):
                 trade_details.update({
                     "tradeType": "sell",
                 })
+        #target and stoploss check
         else:
-            #target check
+             #stoploss check
+            if trade_details["tradeType"] == "buy" and close <= trade_details["stopLoss"]:
+                trade_details["stopLossTime"] = row["time"] 
+                
+            if trade_details["tradeType"] == "sell" and close >= trade_details["stopLoss"]:
+                trade_details["stopLossTime"] = row["time"]
+
             if trade_details["tradeType"] == "buy":
                 idx = bisect_left(trade_details["target"], high)
-                if idx < len(trade_details["target"]) and high < trade_details["target"][idx]:
+                if idx == 0 and high < trade_details["target"][0]:
                     continue
-                trade_details["level"] = max(trade_details["level"], idx)
-            else:
-                idx = len(trade_details["target"]) - bisect_left(trade_details["target"][::-1], low) - 1
-                if idx >= 0 and  low > trade_details["target"][idx]:
-                    continue
-                trade_details["level"] = max(trade_details["level"], idx)
+                if trade_details["level"] < idx:
+                    trade_details["level"] = idx
+                    trade_details["exitTime"] = row["time"]
 
-        #stoploss check
-        
+            else:
+                idx = len(trade_details["target"]) - bisect_left(trade_details["target"][::-1], low) #need to check
+                if idx == 0 and low > trade_details["target"][0]:
+                    continue
+                if trade_details["level"] < idx:
+                    trade_details["level"] = idx
+                    trade_details["exitTime"] = row["time"]
+
+
+
+    if trade_details["level"] != -1:
+        idx = min(trade_details["level"], len(trade_details["target"]) - 1)
+        trade_details["exit"] = trade_details["target"][idx]
+
+    return trade_details
+
+
+
+def test(data):
+    grouped = data.groupby(data.index.date)
+
+    for date, group in grouped:
+        trade_details = day_test(date, group)
+        print(trade_details)
+
+if __name__ == "__main__":
+    data = yf.download("VOLTAS.NS", interval="5m", period="1mo")
+    data.index = pd.to_datetime(data.index).tz_convert('Asia/Kolkata')
+    data.columns = data.columns.get_level_values(0)
+    data['time'] = data.index.time
+    test(data)
 
 
 
