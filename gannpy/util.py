@@ -1,5 +1,7 @@
 import math
 import pandas as pd
+import pkg_resources
+
 
 def calculate_gann_values(num):
     y = num
@@ -68,8 +70,8 @@ def calculate_gann_values(num):
         }
 
 
-def test_data():
-    df = pd.read_csv("VOLTAS.csv")
+def test_data(): 
+    df = pd.read_csv('https://raw.githubusercontent.com/saijayanth59/gann-square/refs/heads/main/VOLTAS.csv')
     df['Date'] = df['Date'].str.replace(r'GMT[+-]\d{4}\s*\(.*\)$', '', regex=True).str.strip()
     df['Date'] = pd.to_datetime(df['Date'], format='%a %b %d %Y %H:%M:%S')
     df.sort_values(by='Date', inplace=True)

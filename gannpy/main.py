@@ -1,5 +1,5 @@
 import pandas as pd
-from utils import calculate_gann_values, test_data
+from gannpy.util import calculate_gann_values, test_data
 from bisect import bisect_left
 
 
