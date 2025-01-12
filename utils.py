@@ -1,4 +1,5 @@
 import math
+import pandas as pd
 
 def calculate_gann_values(num):
     y = num
@@ -65,6 +66,18 @@ def calculate_gann_values(num):
             "buy_target": [""] * 5,
             "sell_target": [""] * 5
         }
+
+
+def test_data():
+    df = pd.read_csv("VOLTAS.csv")
+    df['Date'] = df['Date'].str.replace(r'GMT[+-]\d{4}\s*\(.*\)$', '', regex=True).str.strip()
+    df['Date'] = pd.to_datetime(df['Date'], format='%a %b %d %Y %H:%M:%S')
+    df.sort_values(by='Date', inplace=True)
+    start_time = pd.to_datetime("09:15", format="%H:%M").time()
+    first_valid_index = df[df['Date'].dt.time == start_time].index.min()
+    df.set_index('Date', inplace=True)
+    df['time'] = df.index.time
+    return df[first_valid_index:]
 
 
 if __name__ == "__main__":
