@@ -1,12 +1,38 @@
-import yfinance as yf
 import pandas as pd
 from utils import calculate_gann_values, test_data
 from bisect import bisect_left
 
 
-
-
 def day_test(date, data):
+    """
+    Simulate trading for a specific date based on Gann levels and price movements.
+
+    Parameters:
+        date (datetime): The trading date for which the simulation is run.
+        data (DataFrame): A pandas DataFrame containing the following columns:
+            - 'Open': Opening price for each time interval.
+            - 'Low': Lowest price for each time interval.
+            - 'High': Highest price for each time interval.
+            - 'Close': Closing price for each time interval.
+            - 'time': Time component extracted from the 'Date' column.
+            - The index should be a datetime index representing the timestamp.
+
+    Returns:
+        list: A list of dictionaries, where each dictionary contains details of a trade.
+              Each dictionary includes:
+              - 'date': The date of the trade.
+              - 'entry': The price at which the trade was entered.
+              - 'entryTime': The timestamp when the trade was entered.
+              - 'tradeType': The type of trade ('buy' or 'sell').
+              - 'exit': The price at which the trade exited.
+              - 'exitTime': The timestamp when the trade exited.
+              - 'target': Target prices for the trade.
+              - 'stopLoss': Stop-loss price for the trade.
+              - 'stopLossTime': The timestamp when the stop-loss was hit, if applicable.
+              - 'level': The achieved level of the target.
+              - Additional Gann level details.
+    """
+
     first_close = data.iloc[0]['Close']
     gann_values = calculate_gann_values(first_close)
     trades = []
@@ -104,6 +130,34 @@ def day_test(date, data):
 
 
 def test(data):
+    """
+    Simulate trading for a specific date based on Gann levels and price movements.
+
+    Parameters:
+        data (DataFrame): A pandas DataFrame containing the following columns:
+            - 'Open': Opening price for each time interval.
+            - 'Low': Lowest price for each time interval.
+            - 'High': Highest price for each time interval.
+            - 'Close': Closing price for each time interval.
+            - 'time': Time component extracted from the 'Date' column.
+            - The index should be a datetime index representing the timestamp.
+
+    Returns:
+        list: A list of dictionaries, where each dictionary contains details of a trade.
+              Each dictionary includes:
+              - 'date': The date of the trade.
+              - 'entry': The price at which the trade was entered.
+              - 'entryTime': The timestamp when the trade was entered.
+              - 'tradeType': The type of trade ('buy' or 'sell').
+              - 'exit': The price at which the trade exited.
+              - 'exitTime': The timestamp when the trade exited.
+              - 'target': Target prices for the trade.
+              - 'stopLoss': Stop-loss price for the trade.
+              - 'stopLossTime': The timestamp when the stop-loss was hit, if applicable.
+              - 'level': The achieved level of the target.
+              - Additional Gann level details.
+    """
+
     grouped = data.groupby(data.index.date)
 
     for date, group in grouped:
@@ -113,9 +167,6 @@ def test(data):
             print()
 
 if __name__ == "__main__":
-    # data = yf.download("VOLTAS.NS", interval="5m", period="1mo")
-    # data.index = pd.to_datetime(data.index).tz_convert('Asia/Kolkata')
-    # data.columns = data.columns.get_level_values(0)
     data = test_data()
     
     test(data)
