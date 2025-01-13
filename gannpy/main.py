@@ -38,6 +38,12 @@ def day_test(date, data):
     trades = []
 
     def initialize_trade():
+        dic = {}
+
+        for i in range(len(gann_values["buy_target"])):
+            dic[f"S{i+1}"] = gann_values["sell_target"][i]
+            dic[f"B{i+1}"] = gann_values["buy_target"][i]
+
         return {
             "date": date,
             "entry": None,
@@ -49,7 +55,8 @@ def day_test(date, data):
             "stopLoss": None,
             "stopLossTime": None,
             "level": -1,
-            **gann_values
+            **gann_values,
+            **dic
         }
 
     trade_details = initialize_trade()
@@ -159,12 +166,14 @@ def test(data):
     """
 
     grouped = data.groupby(data.index.date)
-
+    result = []
     for date, group in grouped:
         trades = day_test(date, group)
+        result.extend(trades)
         for trade_details in trades:
             print(date, ": ",  trade_details)
             print()
+    return result
 
 if __name__ == "__main__":
     data = test_data()
