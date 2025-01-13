@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="gannpy",  
-    version="0.1.10",
+    version="0.1.12",
     packages=find_packages(),
     install_requires=[
         "pandas",

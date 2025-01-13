@@ -170,9 +170,6 @@ def test(data):
     for date, group in grouped:
         trades = day_test(date, group)
         result.extend(trades)
-        for trade_details in trades:
-            print(date, ": ",  trade_details)
-            print()
     return result
 
 if __name__ == "__main__":

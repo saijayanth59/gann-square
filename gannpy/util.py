@@ -1,6 +1,5 @@
 import math
 import pandas as pd
-import pkg_resources
 
 
 def calculate_gann_values(num):
