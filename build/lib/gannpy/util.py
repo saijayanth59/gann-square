@@ -1,6 +1,7 @@
 import math
 import pandas as pd
 
+
 def calculate_gann_values(num):
     y = num
 
@@ -67,9 +68,23 @@ def calculate_gann_values(num):
             "sell_target": [""] * 5
         }
 
+def combine_data(dfs):
+    df = pd.concat(dfs, axis=0)
+    df.drop_duplicates(subset=['Date'], keep='first', inplace=True)
+    return df
 
-def test_data():
-    df = pd.read_csv("gannpy/VOLTAS.csv")
+def preprocess_data(data):
+    data['Date'] = data['Date'].str.replace(r'GMT[+-]\d{4}\s*\(.*\)$', '', regex=True).str.strip()
+    data['Date'] = pd.to_datetime(data['Date'], format='%a %b %d %Y %H:%M:%S')
+    data.sort_values(by='Date', inplace=True)
+    start_time = pd.to_datetime("09:15", format="%H:%M").time()
+    first_valid_index = data[data['Date'].dt.time == start_time].index.min()
+    data.set_index('Date', inplace=True)
+    data['time'] = data.index.time
+    return data[first_valid_index:]
+
+def test_data(): 
+    df = pd.read_csv('https://raw.githubusercontent.com/saijayanth59/gann-square/refs/heads/main/VOLTAS.csv')
     df['Date'] = df['Date'].str.replace(r'GMT[+-]\d{4}\s*\(.*\)$', '', regex=True).str.strip()
     df['Date'] = pd.to_datetime(df['Date'], format='%a %b %d %Y %H:%M:%S')
     df.sort_values(by='Date', inplace=True)
